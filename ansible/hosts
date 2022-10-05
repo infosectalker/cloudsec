@@ -1,0 +1,13 @@
+[client]
+10.x.x.x #nodeABC
+
+[server]
+10.x.x.x #nodeXYZ
+
+[all:vars]
+server_address=10.x.x.x 
+server_port=8888 
+mysql_host=10.x.x.x
+mysql_username=poppunk
+mysql_password=RocketRockers123
+

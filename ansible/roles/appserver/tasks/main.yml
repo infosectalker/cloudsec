@@ -1,0 +1,48 @@
+---
+# tasks file for appserver
+- name: Install required software in server node
+  apt:
+    state: present
+    name: ['python-mysqldb', 'mysql-server']
+
+- name: install dependency
+  command: "pip3 install mysql-connector-python"
+
+- name: Create script directory
+  file:
+    path: /opt/alpha
+    state: directory
+
+- name: deploy script to /opt/alpha in server node
+  template: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0777
+  with_items:
+    - { src: 'roles/appserver/templates/alpha_server.py.j2', dest: '/opt/alpha/alpha_server.py' }
+    - { src: 'roles/appserver/templates/alpha_client.py.j2', dest: '/opt/alpha/alpha_client.py' }
+    - { src: 'roles/appserver/templates/alpha_report.py.j2', dest: '/opt/alpha/alpha_report.py' }
+- name: deploy systemd service in server node
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0777
+  with_items:
+    - { src: 'roles/appserver/files/alpha_server.service', dest: '/etc/systemd/system/alpha_server.service' }
+    - { src: 'roles/appserver/files/alpha_client.service', dest: '/etc/systemd/system/alpha_client.service' }
+    - { src: 'roles/appserver/files/alpha_report.service', dest: '/etc/systemd/system/alpha_report.service' }
+    - { src: 'roles/appserver/files/alpha_server.log', dest: '/var/log/alpha_server.log' }
+    - { src: 'roles/appserver/files/alpha_client.log', dest: '/var/log/alpha_client.log' }
+- name: systemd to reread configs
+  systemd:
+    daemon_reload: yes
+
+- name: start service  
+  systemd:
+    name: "{{ item }}"
+    state: started
+    daemon_reload: yes
+  with_items:
+    - 'alpha_server'
+    - 'alpha_client'
+
